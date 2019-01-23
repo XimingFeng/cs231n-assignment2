@@ -49,6 +49,22 @@ class ThreeLayerConvNet(object):
         # of the output affine layer.                                              #
         ############################################################################
         pass
+        filter_shape = (num_filters, input_dim[0], filter_size, filter_size)
+        w1 = np.random.normal(scale=weight_scale, filter_shape)
+        b1 = np.zeros(num_filters)
+        # Height and width of the output after conv layer
+        conv_H = input_dim[1] + 2 * ((filter_size - 1) // 2) - filter_size + 1
+        conv_W = input_dim[2] + 2 * ((filter_size - 1) // 2) - filter_size + 1
+        # Relu does not change the shape of the input
+        # Height and width of output from Max Pooling layer 
+        max_H = conv_H / 2
+        max_W = conv_W / 2
+        # The shape of the output from max pooling layer should be (num_filters, max_H, max_W)
+        # Then it will be reshaped (number_filters, max_H * max_W) and applied to w1
+        w2 = np.random.normal(scale=weight_scale, (max_H * max_W, hidden_dim))
+        b2 = np.zeros(hidden_dim)
+        w3 = np.random.normal(scale=weight_scale, (hidden_dim, num_classes))
+        b3 = np.zeros(num_classes)
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
