@@ -49,23 +49,32 @@ class ThreeLayerConvNet(object):
         # of the output affine layer.                                              #
         ############################################################################
         pass
+        
         filter_shape = (num_filters, input_dim[0], filter_size, filter_size)
-        w1 = np.random.normal(scale=weight_scale, filter_shape)
+        w1 = np.random.normal(0, weight_scale, filter_shape)
         b1 = np.zeros(num_filters)
         # Height and width of the output after conv layer
         conv_H = input_dim[1] + 2 * ((filter_size - 1) // 2) - filter_size + 1
         conv_W = input_dim[2] + 2 * ((filter_size - 1) // 2) - filter_size + 1
         # Relu does not change the shape of the input
         # Height and width of output from Max Pooling layer 
-        max_H = conv_H / 2
-        max_W = conv_W / 2
+        max_H = int(conv_H / 2)
+        max_W = int(conv_W / 2)
         # The shape of the output from max pooling layer should be (num_filters, max_H, max_W)
-        # Then it will be reshaped (number_filters, max_H * max_W) and applied to w1
-        w2 = np.random.normal(scale=weight_scale, (max_H * max_W, hidden_dim))
+        # Then it will be reshaped (N, number_filters * max_H * max_W) and applied to w2
+        w2 = np.random.normal(0, weight_scale, (max_H * max_W * num_filters, hidden_dim))
         b2 = np.zeros(hidden_dim)
-        w3 = np.random.normal(scale=weight_scale, (hidden_dim, num_classes))
-        b3 = np.zeros(num_classes)
-        ############################################################################
+        w3 = np.random.normal(0, weight_scale, (hidden_dim, num_classes))
+        b3 = np.zeros(num_classes)  
+        self.params = {
+            "W1" : w1,
+            "b1" : b1,
+            "W2" : w2,
+            "b2" : b2,
+            "W3" : w3,
+            "b3" : b3,
+        }
+        #####################s#######################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
 
@@ -97,6 +106,11 @@ class ThreeLayerConvNet(object):
         # variable.                                                                #
         ############################################################################
         pass
+        conv_out, conv_cache = conv_relu_pool_forward(X, W1, b1, conv_param, pool_param)
+        # affine layer will handle reshaping the output of the conv layer
+        affine_out1, affine_cache1 = affine_relu_forward(conv_out, W2, b2)
+        affine_out2, affine_cache2 = affine_forward(affine_out1, W3, b3)
+        scores = affine_out2
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
@@ -112,6 +126,9 @@ class ThreeLayerConvNet(object):
         # for self.params[k]. Don't forget to add L2 regularization!               #
         ############################################################################
         pass
+        loss, daffine_out2 = softmax_loss(affine_out2, y)
+        loss += self.reg * (np.sum(W1 ** 2) + np.sum(W2 ** 2) + np.sum(W3 ** 2))
+        
         ############################################################################
         #                             END OF YOUR CODE                             #
         ############################################################################
